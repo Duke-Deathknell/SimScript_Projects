@@ -1,0 +1,137 @@
+''Michael Alsbergas, 5104112
+''Cosc 3P96 Assignment 1 - Gas Station
+
+Preamble
+    Define Idle To Mean 0
+    Define Busy To Mean 1
+    
+    Define PumpA And PumpB As A 1-Dimensional Integer Arrays
+    Define TotCars And Served As Integer Variables
+    Define Busy.NowA And Busy.NowB As Double Variables
+    Define Busy.TimeA And Busy.TimeB As Double Variables 
+    Define Service.Time As Double Variable
+    
+    Tally Tot.BusyA As Sum Of Busy.TimeA 
+    Tally Tot.BusyB As Sum Of Busy.TimeB 
+    
+    Event Notices Include Arrive, Serviced.A And Serviced.B
+End ''Preamble
+   
+Main 
+    Reserve PumpA As 2 
+    Reserve PumpB As 2
+    
+    PumpA(1) = Idle
+    PumpA(2) = Idle
+    PumpB(1) = Idle
+    PumpB(2) = Idle
+    
+    Schedule An Arrive In Exponential.F(5, 1) Minutes
+    Start Simulation
+    
+    Define Percent.BusyA And Percent.BusyB As Double Variables
+    Define Percent.Served As Double Variable
+    
+    Percent.BusyA = Tot.BusyA / (Time.V*Hours.V*Minutes.V) *100
+    Percent.BusyB = Tot.BusyB / (Time.V*Hours.V*Minutes.V) *100
+    Percent.Served = Served / TotCars *100
+    
+    Print 6 lines with 
+        Time.V*Hours.V, Percent.BusyA, Percent.BusyB, Served, TotCars, Percent.Served
+        Thus 
+        Gas Station Simulation
+        Time (Hours)=***** 
+        Pump A Usage = **.*** %
+        Pump B Usage = **.*** %
+        Cars Served = ***  Total Cars = ***
+        Percent = **.*** %
+    
+    Read As / Using Unit 5
+End ''Main
+
+''Car driving by, will it enter the station?
+Event Arrive 
+    Define Temp As Real Variable
+    Define Entered As Integer Variable
+    Temp = Uniform.F(1,10,1)
+    Entered = 0
+    Service.Time = 0
+    
+    While Service.Time < 3 Or Service.Time > 9
+    Do 
+        Service.Time = Normal.F(6,1.5,1)
+    Loop
+    
+    TotCars = TotCars + 1
+
+    If PumpA(2) = Idle 
+        If PumpA(1) = Idle
+            PumpA(1) = Busy
+            Entered = 1
+            Busy.NowA = Time.V*Minutes.V*Hours.V
+            Schedule A Serviced.A In Service.Time Minutes
+        ElseIf Temp <= 2.5 And PumpB(1) = Busy
+            PumpA(2) = Busy
+            Entered = 1
+        EndIf
+    EndIf
+        
+    If PumpB(2) = Idle And Entered = 0
+        If PumpB(1) = Idle
+            PumpB(1) = Busy
+            Busy.NowB = Time.V*Minutes.V*Hours.V
+            Schedule A Serviced.B In Service.Time Minutes
+        ElseIf Temp <= 2.5 
+            PumpB(2) = Busy
+        EndIf
+    EndIf
+    
+    ''Set length of simulation here. Currently set to 1 day.
+    If Time.V <= 1
+    
+        Schedule An Arrive In Exponential.F(5, 1) Minutes
+    EndIf
+    
+End ''Arrive
+
+''A car is leaving PumpA
+Event Serviced.A
+    Served = Served + 1
+    Service.Time = 0
+    
+    While Service.Time < 3 Or Service.Time > 9
+    Do 
+        Service.Time = Normal.F(6,1.5,1)
+    Loop
+    
+    PumpA(1) = Idle 
+    Busy.TimeA = Time.V*Minutes.V*Hours.V - Busy.NowA
+       
+    If PumpA(2) = Busy 
+        PumpA(2) = Idle
+        PumpA(1) = Busy
+        Busy.NowA = Time.V*Minutes.V*Hours.V
+        Schedule A Serviced.A In Service.Time Minutes
+    EndIf
+End ''Serviced.A    
+
+''A car is leaving PumpB
+Event Serviced.B
+    Served = Served + 1
+    Service.Time = 0
+    
+    While Service.Time < 3 Or Service.Time > 9
+    Do 
+        Service.Time = Normal.F(6,1.5,1)
+    Loop
+    
+    PumpB(1) = Idle 
+    Busy.TimeB = Time.V*Minutes.V*Hours.V - Busy.NowB
+       
+    If PumpB(2) = Busy 
+        PumpB(2) = Idle
+        PumpB(1) = Busy
+        Busy.NowB = Time.V*Minutes.V*Hours.V
+        Schedule A Serviced.B In Service.Time Minutes
+    EndIf
+End ''Serviced.B    
