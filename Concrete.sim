@@ -1,0 +1,150 @@
+''Michael Alsbergas, 5104112
+''Cosc 3P96 Assignment 1 - Concrete Plant
+
+Preamble 
+    Define Idle to mean 0
+    Define Filling to mean 1
+    Define Busy to mean 2
+    
+    Define Truck as a 1-Dimensional Integer Array 
+    Define Hopper, And Production as an Integer Variable 
+    
+    Define Concrete.Delivered as an Integer Variable 
+    Define Overtime as 1-Dimensional Double Array 
+    
+    Event Notices Include Load, FillHopper, Depart, Arrive
+    Every Depart Has An X 
+    Every Arrive Has A X
+    Define X as an Integer Variable
+    
+    Define Travel.Fn as a Double Function
+    
+End ''Preamble 
+
+Main 
+    Reserve Truck as 10
+    Reserve Overtime as 10 
+    Define i as Integer Variable
+        
+    For i = 1 to 10
+    do 
+        Truck(i) = Idle
+        Overtime(i) = 0
+    loop
+    
+    Hopper = 50 
+    Concrete.Delivered = 0
+    Production = Idle
+    
+    Schedule A Load Now
+    Start Simulation 
+    
+    Define Tot.Overtime as Double Variable
+    Tot.Overtime = 0
+    
+    For i = 1 to 10
+    do 
+        Tot.Overtime = Tot.Overtime + Overtime(i)
+    loop
+    
+    Print 15 lines with 
+        Time.V*Hours.V, OverTime(1), OverTime(2), OverTime(3), OverTime(4), 
+        OverTime(5), OverTime(6), OverTime(7), OverTime(8), OverTime(9), 
+        OverTime(10), Tot.Overtime, Concrete.Delivered
+        Thus 
+        Concrete Plant Simulation:
+        Time (Hours)=**.*** 
+        Overtime: (Hours)
+        Truck 1:  **.***
+        Truck 2:  **.***
+        Truck 3:  **.***
+        Truck 4:  **.***
+        Truck 5:  **.***
+        Truck 6:  **.***
+        Truck 7:  **.***
+        Truck 8:  **.***
+        Truck 9:  **.***
+        Truck 10: **.***
+        Total: ***.***  
+        Concrete Delivered: ******
+        
+    
+    Read As / Using Unit 5
+    
+End ''Main
+
+''Event that loads all available concrete into available trucks
+Event Load 
+    
+    Define x as Integer Variable
+    For x = 1 to 10 
+    do 
+        If Truck(x) = Idle And Time.V*Hours.V*Minutes.V < 440 And Hopper >= 10
+            Hopper = Hopper - 10 
+            Schedule A Depart given x in 5 Minutes
+            Truck(x) = Filling
+        EndIf
+    loop
+    
+    If Hopper < 25 And Time.V*Hours.V < 6.51 And Production = Idle
+        Schedule A FillHopper in 30 Minutes
+        Production = Busy
+    EndIf
+End ''Load
+
+Event FillHopper 
+    Hopper = Hopper + 25
+    Production = Idle 
+    Schedule a Load Now
+End ''FillHopper
+
+''A filled truck(x) leaves the plant and a delivery time is calculated
+Event Depart given X 
+    Define X as Integer Variable 
+    
+    Define Wait.Time, Unload, And Travel as Double Variables 
+    
+    Concrete.Delivered = Concrete.Delivered + 10
+    Truck(X) = Busy
+    
+    Wait.Time = Exponential.F(10,1)
+    Unload = Uniform.F(5,15,1)
+    Travel = 2 * Travel.Fn
+    
+    Schedule An Arrive(X) in (Wait.Time + Unload + Travel) Minutes
+    
+End ''Depart    
+
+''A truck(x) arrives back at the plant after delivering its load
+Event Arrive(X) 
+    Define X as Integer Variable
+    
+    Truck(X) = Idle
+    
+    If Time.V*Hours.V > 8
+        OverTime(X) = Time.V*Hours.V - 8
+    Else 
+        Schedule A Load Now
+    EndIf
+End ''Arrive
+    
+''A function to generate a travel time using the given chart
+Function Travel.Fn
+    
+    Define temp as Double Variable 
+    
+    Temp = Uniform.F(1,65,1)
+    
+    If Temp <= 15 
+       return(Uniform.F(10,15,1)) 
+    ElseIf Temp <= 35
+        return(Uniform.F(15,20,1))
+    ElseIf Temp <= 50 
+        return(Uniform.F(20,25,1))
+    ElseIf Temp <= 60 
+        return(Uniform.F(25,30,1))
+    Else 
+        return(Uniform.F(30,35,1))
+    EndIf
+End ''Travel.Fn
+    
