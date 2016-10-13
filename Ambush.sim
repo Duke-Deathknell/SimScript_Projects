@@ -1,0 +1,85 @@
+'' Michael Alsbergas, 5104112
+'' Cosc 3P96 Assignment 2 - Ambush
+/~
+Preamble 
+    
+    Define Board as a 2-Dimensional Integer Array
+    Define xPoint and yPoint as Integer Variables
+    Define nMoves as Integer Variable
+    
+    Event Notices Include MovePoint 
+End ''Preamble 
+
+Main 
+    Reserve Board as 8 by 8
+    
+    ''Run simulation 5 times
+    Define i as Integer Variable
+    for i = 1 to 5
+    do
+         
+        Define x as Integer Variable
+        for x = 1 to 8
+        do 
+            Define y as Integer Variable
+            for y = 1 to 8
+            do 
+                Board(x,y) = 0
+            loop 
+        loop
+        xPoint = 1
+        yPoint = 1
+        Board(xPoint,yPoint) = 1
+        nMoves = 0
+        
+        Schedule a MovePoint Now
+        Start Simulation
+        
+        Define k as Integer Variable
+        for k = 1 to 8
+        do 
+        
+            Print 1 Line with 
+                Board(k,1), Board(k,2), Board(k,3), Board(k,4), Board(k,5), Board(k,6),Board(k,7), Board(k,8)
+                Thus 
+                [**] [**] [**] [**] [**] [**] [**] [**] 
+                
+        loop
+        ''To divide simulations in output
+        Print 1 Line 
+        Thus
+        -----------------------------------
+      
+    loop
+    
+    Read As / Using Unit 5
+End ''Main
+
+''Move marker using uniform distributed directions
+Event MovePoint 
+    Define x2 and y2 as Integer Variables
+    x2 = 0
+    y2 = 0
+    
+    While x2 < 1 Or x2 > 8
+    do 
+        x2 = Uniform.f(-1, 1, 1)
+        x2 = x2 + xPoint
+    loop
+    
+    While y2 < 1 Or y2 > 8
+    do 
+        y2 = Uniform.f(-1, 1, 1)
+        y2 = y2 + yPoint
+    loop
+    
+    Board(x2,y2) = Board(x2,y2) + 1
+    xPoint = x2
+    yPoint = y2
+    nMoves = nMoves + 1
+    
+    If nMoves < 128 ''Able to go to each square average of 2 times
+        Schedule a MovePoint in 1 Hour
+    EndIf
+End ''MovePoint
+~/
