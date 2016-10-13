@@ -1,0 +1,338 @@
+'' Michael Alsbergas, 5104112
+'' Cosc 3P96 Assignment 2 - Ambush
+
+Preamble 
+    Define Dead to mean 11
+    Define Wall to mean -1
+    
+    Define Board as a 2-Dimensional Integer Array
+    Define xPoint and yPoint as 1-Dimensional Integer Arrays
+    Define prev as 1-Dimensional Integer Array
+    Define badX and badY as 1-Dimensional Integer Arrays
+    Define life as 1-Dimensional Real Array 
+    Define pop, nBad, babies, ticks as Integer Variables
+    Define death as Real Variable
+        
+    Event Notices Include MovePoint, Assess 
+    Every MovePoint has an I and a Dir
+    Define I and Dir as Integer Variables
+    
+End ''Preamble 
+
+Main 
+    Reserve Board as 10 by 10
+    Reserve life, prev, xPoint and yPoint as 200
+    Reserve badX and badY as 20
+    death = 10
+    
+    ''Run simulation 20 times with different number of bad squares
+    Define i as Integer Variable
+    for i = 1 to 20
+    do
+        nBad = 21 - i
+        pop = 15
+        ticks = 1
+        
+        Define x as Integer Variable
+        for x = 1 to 10
+        do 
+            Define y as Integer Variable
+            for y = 1 to 10
+            do 
+                Board(x,y) = 0
+            loop 
+        loop
+        Board(4,4) = Wall
+        Board(5,5) = Wall
+        Board(6,6) = Wall
+        Board(7,7) = Wall
+        
+        Define z as Integer Variable
+        for z = 1 to pop
+        do
+            xPoint(z) = Uniform.f(1,10,1)
+            yPoint(z) = Uniform.f(1,10,1)
+            while Board(xPoint(z),yPoint(z)) = Wall
+            do
+                xPoint(z) = Uniform.f(1,10,1)
+                yPoint(z) = Uniform.f(1,10,1)
+            loop
+            Board(xPoint(z),yPoint(z)) = Board(xPoint(z),yPoint(z)) + 1
+            
+            prev(z) = 0
+            life(z) = 0
+        loop
+        
+        for z = 1 to nBad
+        do
+            badX(z) = Uniform.f(1,10,1)
+            badY(z) = Uniform.f(1,10,1)
+            while Board(badX(z),badY(z)) = Wall
+            do
+                badX(z) = Uniform.f(1,10,1)
+                badY(z) = Uniform.f(1,10,1)
+            loop
+        loop
+        
+        Schedule an Assess Now
+        Start Simulation
+        
+        Define avgLife as Real Variable
+        avgLife = 0
+        
+        for z = 1 to pop
+        do/~
+            Print 1 Line with 
+            z, life(z)
+            Thus
+            Person ***'s Life: ***
+            ~/
+            avgLife = avgLife + life(z)
+        loop
+        avgLife = avgLife / pop
+        
+        Print 4 lines with
+        i, nBad, ticks, avgLife
+        Thus
+        Run: **
+        Bad Squares: **
+        Ticks: ****
+        Average Life: ***.***
+        
+        for z = 1 to nBad
+        do
+            Board(badX(z),badY(z)) = Board(badX(z),badY(z)) - 50
+        loop
+        
+        Define k as Integer Variable
+        for k = 1 to 8
+        do 
+        
+            Print 1 Line with 
+                Board(k,1), Board(k,2), Board(k,3), Board(k,4), Board(k,5), 
+                Board(k,6),Board(k,7), Board(k,8),Board(k,9), Board(k,10)
+                Thus 
+                [**] [**] [**] [**] [**] [**] [**] [**] [**] [**]
+                
+        
+        loop
+        ''To divide simulations in output
+        Print 1 Line 
+        Thus
+        -----------------------------------
+      
+    loop
+    
+    Read As / Using Unit 5
+End ''Main
+
+''Determine board state and choose where each person will move
+Event Assess 
+    
+    Define probs as 1-Dimensional Real Array
+    Reserve probs as 9
+    Define extinct, hots, temp, x2 and y2 as Integer Variables
+    Define totProbs, theProb as Real Variables
+    
+    extinct = 1 ''Assume it will go extinct
+    
+    ''Add babies
+    Define t as Integer Variable
+    for t = 1 to babies
+    do
+        xPoint(t+pop) = Uniform.f(1,10,1)
+        yPoint(t+pop) = Uniform.f(1,10,1)
+        while Board(xPoint(t+pop),yPoint(t+pop)) = Wall
+        do
+            xPoint(t+pop) = Uniform.f(1,10,1)
+            yPoint(t+pop) = Uniform.f(1,10,1)
+        loop
+        Board(xPoint(t+pop),yPoint(t+pop)) = Board(xPoint(t+pop),yPoint(t+pop)) + 1
+        
+        prev(t+pop) = 0
+        life(t+pop) = 0
+    loop
+    pop = pop + babies
+    
+    babies = 0
+    
+    Define i as Integer Variable
+    for i = 1 to pop
+    do
+        x2 = 0
+        y2 = 0
+        hots = 0
+        temp = 1
+        totProbs = 0
+    
+        Define z as Integer Variable 
+        for z = 1 to 9
+        do
+            probs(z) = 1
+        loop
+        
+        Define temp2 as Real Variable
+        temp2 = Uniform.f(0,10,1)
+        for z = 1 to nBad
+        do
+            if xPoint(i) = badX(z) And yPoint(i) = badY(z) And temp2 < death And prev(i) < Dead
+                prev(i) = Dead
+                Board(xPoint(i),yPoint(i)) = Board(xPoint(i),yPoint(i)) - 1
+            EndIf
+        loop
+         
+        if Board(xPoint(i),yPoint(i)) > 3 And Uniform.f(0,1,1) < 0.6 And prev(i) < Dead
+            prev(i) = Dead
+            Board(xPoint(i),yPoint(i)) = Board(xPoint(i),yPoint(i)) - 1
+        EndIf
+        
+        If prev(i) < Dead ''Since Dead = 11 
+            extinct = 0 ''At least 1 person is alive
+                
+        Define x and y as Integer Variables
+        for x = -1 to 1
+        do
+            for y = -1 to 1
+            do
+	            x2 = x + xPoint(i)
+                y2 = y + yPoint(i)
+            
+               If (x2 > 0 And x2 < 9) And (y2 > 0 And y2 <9) ''In the board
+                   If Board(x2,y2) = Wall ''Wall
+                        probs(temp) = 0
+                   EndIf
+                    If Board(x2,y2) = 1 ''Mate
+                        probs(temp) = probs(temp) * 2
+                       hots = 1
+                   EndIf
+                   If Board(x2,y2) > 1 ''Crowd
+                       probs(temp) = probs(temp) * 0.5
+                   EndIf
+                Else '' Off the board
+                   probs(temp) = 0
+                EndIf
+                totProbs = totProbs + probs(temp)
+                probs(temp) = totProbs
+                temp = temp + 1
+            loop
+        loop
+    
+        If hots = 0 And prev(i) > 0
+            totProbs = totProbs + 1
+        EndIf
+        
+        theProb = Uniform.f(0,totProbs,1)
+    
+        If (totProbs - theProb) < 1 And hots = 0 And prev(i) > 0''Will move in same direction
+            theProb = probs(prev(i))
+        EndIf
+        
+        If theProb < probs(1)
+            ''up-left
+            Schedule a MovePoint given i and 1 in 59 minutes
+        ElseIf theProb < probs(2)
+            ''left
+            Schedule a MovePoint given i and 2 in 59 minutes
+        ElseIf theProb < probs(3)
+            ''down-left
+            Schedule a MovePoint given i and 3 in 59 minutes
+        ElseIf theProb < probs(4)
+            ''up
+            Schedule a MovePoint given i and 4 in 59 minutes
+        ElseIf theProb < probs(5)
+            ''stay
+            Schedule a MovePoint given i and 5 in 59 minutes
+        ElseIf theProb < probs(6)
+            ''down 
+            Schedule a MovePoint given i and 6 in 59 minutes
+        ElseIf theProb < probs(7)
+            ''up-right
+            Schedule a MovePoint given i and 7 in 59 minutes
+        ElseIf theProb < probs(8)
+            ''right
+            Schedule a MovePoint given i and 8 in 59 minutes
+        ElseIf theProb < probs(9)
+            ''down-right
+            Schedule a MovePoint given i and 9 in 59 minutes
+        EndIf
+        
+        if Board(xPoint(i),yPoint(i)) = 2 And Uniform.f(0,1,1) < 0.55
+        ''Both people will have a 55% chance of making a baby, so 80% chance of 1 baby
+            babies = babies + 1
+        EndIf
+        
+        EndIf ''Marker was dead
+        
+    loop ''Loop to next marker
+    
+    if pop + babies < 200 ''Hitting max number of history'' And extinct = 0 And ticks < 500
+        ticks = ticks + 1
+        Schedule an Assess in 1 hour ''1 hour = 1 tick
+    EndIf
+    
+End ''Assess
+
+''Move marker using given direction
+Event MovePoint given I And Dir 
+    Define I and Dir as Integer Variables
+
+    life(I) = life(I) + 1 ''Person survived another tick
+    
+    If Dir = 1
+        ''up-left
+        Board(xPoint(I),yPoint(I)) = Board(xPoint(I),yPoint(I)) - 1
+        xPoint(I) = xPoint(I) - 1
+        yPoint(I) = yPoint(I) - 1
+        Board(xPoint(I),yPoint(I)) = Board(xPoint(I),yPoint(I)) + 1
+        prev(I) = 1
+    ElseIf Dir = 2
+        ''left
+        Board(xPoint(I),yPoint(I)) = Board(xPoint(I),yPoint(I)) - 1
+        xPoint(I) = xPoint(I) - 1
+        Board(xPoint(I),yPoint(I)) = Board(xPoint(I),yPoint(I)) + 1
+        prev(I) = 2
+    ElseIf Dir = 3
+        ''down-left
+        Board(xPoint(I),yPoint(I)) = Board(xPoint(I),yPoint(I)) - 1
+        xPoint(I) = xPoint(I) - 1
+        yPoint(I) = yPoint(I) + 1
+        Board(xPoint(I),yPoint(I)) = Board(xPoint(I),yPoint(I)) + 1
+        prev(I) = 3
+    ElseIf Dir = 4
+        ''up
+        Board(xPoint(I),yPoint(I)) = Board(xPoint(I),yPoint(I)) - 1
+        yPoint(I) = yPoint(I) - 1
+        Board(xPoint(I),yPoint(I)) = Board(xPoint(I),yPoint(I)) + 1
+        prev(I) = 4
+    ElseIf Dir = 5
+        ''stay
+        prev(I) = 5
+    ElseIf Dir = 6
+        ''down 
+        Board(xPoint(I),yPoint(I)) = Board(xPoint(I),yPoint(I)) - 1
+        yPoint(I) = yPoint(I) + 1
+        Board(xPoint(I),yPoint(I)) = Board(xPoint(I),yPoint(I)) + 1
+        prev(I) = 6
+    ElseIf Dir = 7
+        ''up-right
+        Board(xPoint(I),yPoint(I)) = Board(xPoint(I),yPoint(I)) - 1
+        xPoint(I) = xPoint(I) + 1
+        yPoint(I) = yPoint(I) - 1
+        Board(xPoint(I),yPoint(I)) = Board(xPoint(I),yPoint(I)) + 1
+        prev(I) = 7
+    ElseIf Dir = 8
+        ''right
+        Board(xPoint(I),yPoint(I)) = Board(xPoint(I),yPoint(I)) - 1
+        xPoint(I) = xPoint(I) + 1
+        Board(xPoint(I),yPoint(I)) = Board(xPoint(I),yPoint(I)) + 1
+        prev(I) = 8
+    ElseIf Dir = 9
+        ''down-right
+        Board(xPoint(I),yPoint(I)) = Board(xPoint(I),yPoint(I)) - 1
+        xPoint(I) = xPoint(I) + 1
+        yPoint(I) = yPoint(I) + 1
+        Board(xPoint(I),yPoint(I)) = Board(xPoint(I),yPoint(I)) + 1
+        prev(I) = 9
+    EndIf
+            
+End ''MovePoint
